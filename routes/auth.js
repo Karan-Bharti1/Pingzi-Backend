@@ -21,9 +21,24 @@ router.post("/register",async(req,res)=>{
         await user.save()
         const token= jwt.sign({id:user._id},JWT_SECRET,{expiresIn:"24h"})
         console.log(token)
-        res.status(201).json({token,username})
+        res.status(201).json({token,username,message:"User registered Successfully"})
     } catch (error) {
     res.status(500).json({message:"Server Error",error:error})
+    }
+})
+router.post("/login",async(req,res)=>{
+        const {username,password}=req.body
+    try {
+        const user=await PingUser.findOne({username})
+        if(!user){
+            res.status(404).json({message:"User Not Found"})
+        }
+        const isPasswordMatch=await user.comparePassword(password);
+        if(!isPasswordMatch)return res.status(400).json({message:"Invalid Credentials"})
+            res.status(200).json({message:"Login Successfull",username:user.username})
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({message:"Server Error While Login",error:error})
     }
 })
 module.exports=router;

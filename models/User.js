@@ -16,5 +16,8 @@ const PingUserSchema=new mongoose.Schema({
         default:Date.now
     }
 })
+PingUserSchema.methods.comparePassword= async function(password){
+   return bcrypt.compare(password,this.password) 
+}
 const PingUser=mongoose.model("PingUser",PingUserSchema)
 module.exports=PingUser
