@@ -19,18 +19,19 @@ mongoose.connect(process.env.MONGODB).then(()=>console.log("Database connected s
 
 app.use("/auth",authRoutes);
 const PORT=process.env.PORT||5000
-io.on("connection",(socket=>{
-    console.log("User Conneted",socket.id)
+io.on("connection",socket=>{
+    console.log("User Connected",socket.id)
     socket.on("send_message",async(data)=>{
         const {sender,receiver,message}=data
         const newMessage=new Messages({sender,receiver,message})
         await newMessage.save()
+            socket.broadcast.emit("receive_message",data)
     })
-    socket.broadcast.emit("receive_message",data)
+
 socket.on("disconnect",()=>{
     console.log("User Disconnected",socket.id)
 })
-}))
+})
 app.get("/messages",async(req,res)=>{
     const {sender,receiver}=req.query;
     try {
@@ -52,7 +53,7 @@ app.get("/users",async(req,res)=>{
       res.json(users)
 
     } catch (error) {
-        res.sendStatus(500).json({message:"Error while fetching users"})
+        res.status(500).json({message:"Error while fetching users"})
     }
 })
 app.listen(PORT,()=>{
